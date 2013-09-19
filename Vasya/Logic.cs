@@ -18,7 +18,7 @@ namespace Vasya
         public const int N = 13;
         public int ActualImageSize = Size - N;
 
-        double delta = 0.1;
+        double delta = 0.001;
 
         private static readonly int[,] LoG = new[,]
             {
@@ -43,7 +43,6 @@ namespace Vasya
         private double _topoMaxValue;
 
         private double[,] _newTopo;
-        private Tuple<double, double> _limits;
 
         public Logic(string fileName)
         {
@@ -57,26 +56,12 @@ namespace Vasya
         public void DoWork()
         {
             _topo = LoadTopoFromFile(_fileName);
-            _limits = FindActualDataLimits();
             _topoMinValue = _topo.Min(x => x.Min());
             _topoMaxValue = _topo.Max(x => x.Max());
             _newTopo = NewTopo(_topo);
-            MinValue = _newTopo.Cast<double>().Min();
-            MaxValue = _newTopo.Cast<double>().Max();
-        }
-
-        private Tuple<double, double> FindActualDataLimits()
-        {/*
-            var sortedTopoData = _topo.SelectMany(x => x).ToList().OrderBy(x => x);
-            for (var i = 0; i < Size; i++) {
-                for (int j = 0; j < Size; j++)
-                {
-
-                    if (Math.Abs(currentX/previousX) < delta)
-                }
-
-            }*/
-            return null;
+            var limits = FindActualDataLimits();
+            MinValue = limits.Item1;
+            MaxValue = limits.Item2;
         }
 
         private List<List<double>> LoadTopoFromFile(string fileName)
@@ -91,6 +76,30 @@ namespace Vasya
                 }
             }
             return topo;
+        }
+
+        private Tuple<double, double> FindActualDataLimits()
+        {
+            var sortedNewTopoData = _newTopo.Cast<double>().OrderBy(x => x).ToList();
+            var lowLimit = sortedNewTopoData[0];
+            for (var i = 1; i < ActualImageSize * ActualImageSize - 1; i++)
+            {
+                if (Math.Abs((sortedNewTopoData[i + 1] - sortedNewTopoData[i]) / (sortedNewTopoData[i] - lowLimit)) < delta)
+                {
+                    break;
+                }
+                lowLimit = sortedNewTopoData[i];
+            }
+            var upLimit = sortedNewTopoData[ActualImageSize * ActualImageSize - 1];
+            for (var i = ActualImageSize * ActualImageSize - 2; i >= 1; i--)
+            {
+                if (Math.Abs((sortedNewTopoData[i - 1] - sortedNewTopoData[i]) / (sortedNewTopoData[i] - upLimit)) < delta)
+                {
+                    break;
+                }
+                upLimit = sortedNewTopoData[i];
+            }
+            return new Tuple<double, double>(lowLimit, upLimit);
         }
 
         private double[,] NewTopo(IList<List<double>> topo)
