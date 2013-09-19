@@ -74,9 +74,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="BusyIndicatorManager.cs" />
-    <Compile Include="ImageCreator.cs" />
-    <Compile Include="PagesManager.cs" />
+    <Compile Include="Utilities\BusyIndicatorManager.cs" />
+    <Compile Include="Utilities\ImageCreator.cs" />
+    <Compile Include="Utilities\PagesManager.cs" />
     <Compile Include="VasyaVM.cs" />
     <Compile Include="Views\SelectFilePage.xaml.cs">
       <DependentUpon>SelectFilePage.xaml</DependentUpon>
@@ -84,7 +84,7 @@
     <Compile Include="Views\WorkAreaPage.xaml.cs">
       <DependentUpon>WorkAreaPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="VM.cs" />
+    <Compile Include="Utilities\VM.cs" />
     <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
