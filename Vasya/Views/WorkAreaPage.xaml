@@ -6,7 +6,7 @@
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
     <TabControl TabStripPlacement="Left">
-        <TabItem Name="NewTopo" Header="new topo" Height="100">
+        <TabItem Name="NewTopo" Header="Результат фильтрации" Height="100">
             <TabItem.Content>
                 <Grid>
                     <Grid.RowDefinitions>
@@ -15,29 +15,29 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition />
                     </Grid.RowDefinitions>
-                    <TextBox Grid.Row="1" Text="{Binding Value}" HorizontalAlignment="Center" />
+                    <TextBox Grid.Row="1" Text="{Binding Value, StringFormat=E2}" HorizontalAlignment="Center" />
                     <Grid Grid.Row="2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="100" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="100" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="{Binding MinValue}"></TextBlock>
+                        <TextBlock Grid.Column="0" Text="{Binding MinValue, StringFormat=E2}"></TextBlock>
                         <Slider x:Name="slider" Grid.Column="1" Value="{Binding Value}"
                                 Minimum="{Binding MinValue}" Maximum="{Binding MaxValue}">
                         </Slider>
-                        <TextBlock Grid.Column="2" Text="{Binding MaxValue}"></TextBlock>
+                        <TextBlock Grid.Column="2" Text="{Binding MaxValue, StringFormat=E2}"></TextBlock>
                     </Grid>
                     <ScrollViewer Grid.Row="3" ScrollViewer.VerticalScrollBarVisibility="Hidden">
-                        <Image Source="{Binding NewTopoFilteredImage}" Stretch="Uniform"></Image>
+                        <Image Source="{Binding NewTopoFilteredImage}" Stretch="UniformToFill"></Image>
                     </ScrollViewer>
                 </Grid>
             </TabItem.Content>
         </TabItem>
-        <TabItem Name="OriginalTopo" Header="original topo" IsSelected="{Binding OriginalTopoSelected}" Height="100">
+        <TabItem Name="OriginalTopo" Header="Исходное изображение" IsSelected="{Binding OriginalTopoSelected}" Height="100">
             <TabItem.Content>
                 <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Hidden">
-                    <Image Source="{Binding OriginalTopoFilteredImage}" Stretch="Uniform"></Image>
+                    <Image Source="{Binding OriginalTopoFilteredImage}" Stretch="UniformToFill"></Image>
                 </ScrollViewer>
             </TabItem.Content>
         </TabItem>

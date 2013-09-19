@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Vasya.Views.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-        Title="Vasya nauka">
+        Title="Анализ АСМ изображений 1.1" Width="640" Height="640">
     <Grid>
         <Grid x:Name="MainContainer" />
         <xctk:BusyIndicator x:Name="AppWideBusyIndicator"/>

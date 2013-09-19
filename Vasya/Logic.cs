@@ -18,7 +18,7 @@ namespace Vasya
         public const int N = 13;
         public int ActualImageSize = Size - N;
 
-        private double delta = 0.01;
+        double delta = 0.1;
 
         private static readonly int[,] LoG = new[,]
             {
@@ -43,6 +43,7 @@ namespace Vasya
         private double _topoMaxValue;
 
         private double[,] _newTopo;
+        private Tuple<double, double> _limits;
 
         public Logic(string fileName)
         {
@@ -56,11 +57,26 @@ namespace Vasya
         public void DoWork()
         {
             _topo = LoadTopoFromFile(_fileName);
+            _limits = FindActualDataLimits();
             _topoMinValue = _topo.Min(x => x.Min());
             _topoMaxValue = _topo.Max(x => x.Max());
             _newTopo = NewTopo(_topo);
             MinValue = _newTopo.Cast<double>().Min();
             MaxValue = _newTopo.Cast<double>().Max();
+        }
+
+        private Tuple<double, double> FindActualDataLimits()
+        {/*
+            var sortedTopoData = _topo.SelectMany(x => x).ToList().OrderBy(x => x);
+            for (var i = 0; i < Size; i++) {
+                for (int j = 0; j < Size; j++)
+                {
+
+                    if (Math.Abs(currentX/previousX) < delta)
+                }
+
+            }*/
+            return null;
         }
 
         private List<List<double>> LoadTopoFromFile(string fileName)
@@ -100,7 +116,7 @@ namespace Vasya
                 {
                     if (n >= i && m >= j)
                     {
-                        newValue -= LoG[i, j]*topo[n - i][m - j];
+                        newValue += LoG[i, j]*topo[n - i][m - j];
                     }
                 }
             }
@@ -127,7 +143,7 @@ namespace Vasya
             {
                 for (int j = 0; j < ActualImageSize; j++)
                 {
-                    bitmap.SetPixel(i, j, _newTopo[i, j] < value ? Color.Firebrick : MakeColor(i, j));
+                    bitmap.SetPixel(i, j, _newTopo[i, j] < value ? Color.Firebrick : MakeColor(i + N, j + N));
                 }
             }
             return ToWpfBitmap(bitmap);
