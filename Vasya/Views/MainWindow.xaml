@@ -1,0 +1,9 @@
+﻿<Window x:Class="Vasya.Views.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        Title="Vasya nauka">
+    <Grid>
+        <Grid x:Name="MainContainer" />
+        <xctk:BusyIndicator x:Name="AppWideBusyIndicator"/>
+    </Grid>
+</Window>
