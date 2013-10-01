@@ -4,6 +4,15 @@
         Title="Анализ АСМ изображений 1.1" Width="640" Height="640">
     <Grid>
         <Grid x:Name="MainContainer" />
-        <xctk:BusyIndicator x:Name="AppWideBusyIndicator"/>
+        <xctk:BusyIndicator x:Name="AppWideBusyIndicator">
+            <Grid HorizontalAlignment="Left" Height="610" VerticalAlignment="Top" Width="632">
+                <CheckBox Content="CheckBox" HorizontalAlignment="Left" Margin="299,306,0,0" VerticalAlignment="Top"/>
+                <CheckBox Content="CheckBox" HorizontalAlignment="Left" Margin="299,268,0,0" VerticalAlignment="Top"/>
+                <CheckBox Content="CheckBox" HorizontalAlignment="Left" Margin="299,339,0,0" VerticalAlignment="Top"/>
+                <Calendar HorizontalAlignment="Left" Margin="51,268,0,0" VerticalAlignment="Top"/>
+                <Rectangle Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="143" Margin="299,404,0,0" Stroke="Black" VerticalAlignment="Top" Width="247"/>
+                <ComboBox HorizontalAlignment="Left" Height="87" Margin="461,268,0,0" VerticalAlignment="Top" Width="95"/>
+            </Grid>
+        </xctk:BusyIndicator>
     </Grid>
 </Window>

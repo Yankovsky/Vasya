@@ -8,7 +8,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using BitmapProcessing;
 using Color = System.Drawing.Color;
+using PixelFormat = System.Drawing.Imaging.PixelFormat;
 
 namespace Vasya
 {
@@ -17,8 +19,6 @@ namespace Vasya
         public const int Size = 1024;
         public const int N = 13;
         public int ActualImageSize = Size - N;
-
-        double delta = 0.001;
 
         private static readonly int[,] LoG = new[,]
             {
@@ -38,9 +38,9 @@ namespace Vasya
             };
 
         private readonly string _fileName;
-        private double _topoMinValue;
         private List<List<double>> _topo;
-        private double _topoMaxValue;
+        private double _topoMin;
+        private double _topoMax;
 
         private double[,] _newTopo;
 
@@ -56,12 +56,14 @@ namespace Vasya
         public void DoWork()
         {
             _topo = LoadTopoFromFile(_fileName);
-            _topoMinValue = _topo.Min(x => x.Min());
-            _topoMaxValue = _topo.Max(x => x.Max());
+            var a = _topo.SelectMany(x => x).ToList();
+            _topoMin = a.Min();
+            _topoMax = a.Max();
+
             _newTopo = NewTopo(_topo);
-            var limits = FindActualDataLimits();
-            MinValue = limits.Item1;
-            MaxValue = limits.Item2;
+            var b = _newTopo.Cast<double>().ToList();
+            MinValue = b.Min();
+            MaxValue = b.Max();
         }
 
         private List<List<double>> LoadTopoFromFile(string fileName)
@@ -78,26 +80,25 @@ namespace Vasya
             return topo;
         }
 
-        private Tuple<double, double> FindActualDataLimits()
+        private Tuple<double, double> FindActualDataLimits(List<double> sortedData, int size, double delta)
         {
-            var sortedNewTopoData = _newTopo.Cast<double>().OrderBy(x => x).ToList();
-            var lowLimit = sortedNewTopoData[0];
-            for (var i = 1; i < ActualImageSize * ActualImageSize - 1; i++)
+            var lowLimit = sortedData[0];
+            for (var i = 1; i < size - 1; i++)
             {
-                if (Math.Abs((sortedNewTopoData[i + 1] - sortedNewTopoData[i]) / (sortedNewTopoData[i] - lowLimit)) < delta)
+                if (Math.Abs((sortedData[i + 1] - sortedData[i]) / (sortedData[i] - lowLimit)) < delta)
                 {
                     break;
                 }
-                lowLimit = sortedNewTopoData[i];
+                lowLimit = sortedData[i];
             }
-            var upLimit = sortedNewTopoData[ActualImageSize * ActualImageSize - 1];
-            for (var i = ActualImageSize * ActualImageSize - 2; i >= 1; i--)
+            var upLimit = sortedData[size - 1];
+            for (var i = size - 2; i >= 1; i--)
             {
-                if (Math.Abs((sortedNewTopoData[i - 1] - sortedNewTopoData[i]) / (sortedNewTopoData[i] - upLimit)) < delta)
+                if (Math.Abs((sortedData[i - 1] - sortedData[i]) / (sortedData[i] - upLimit)) < delta)
                 {
                     break;
                 }
-                upLimit = sortedNewTopoData[i];
+                upLimit = sortedData[i];
             }
             return new Tuple<double, double>(lowLimit, upLimit);
         }
@@ -110,13 +111,13 @@ namespace Vasya
             {
                 for (int m = N; m < Size; m++)
                 {
-                    newTopo[n - N, m - N] = NetTopoValue(topo, m, n);
+                    newTopo[n - N, m - N] = NetTopoValue(topo, n, m);
                 }
             }
             return newTopo;
         }
 
-        private double NetTopoValue(IList<List<double>> topo, int m, int n)
+        private double NetTopoValue(IList<List<double>> topo, int n, int m)
         {
             double newValue = 0;
             for (int i = 0; i < N; i++)
@@ -132,7 +133,9 @@ namespace Vasya
             return newValue;
         }
 
-        public byte[] FilteredImage(double value)
+
+        //WHY YOU NOT WORK CORRECTLY BITCH
+        public byte[] FilteredImage2(double value)
         {
             var result = new byte[ActualImageSize * ActualImageSize];
             for (int i = 0; i < ActualImageSize; i++)
@@ -145,17 +148,42 @@ namespace Vasya
             return result;
         }
 
+        public BitmapSource FilteredImage(double value)
+        {
+            using (var bitmap = new Bitmap(ActualImageSize, ActualImageSize))
+            {
+                var processor = new FastBitmap(bitmap);
+                processor.LockImage();
+                for (int i = 0; i < ActualImageSize; i++)
+                {
+                    for (int j = 0; j < ActualImageSize; j++)
+                    {
+                        processor.SetPixel(i, j, _newTopo[i, j] < value ? Color.White : Color.Black);
+                    }
+                }
+
+                processor.UnlockImage();
+                return ToWpfBitmap(bitmap);
+            }
+        }
+
         public BitmapSource OriginalImageWithFilteredPoints(double value)
         {
-            var bitmap = new Bitmap(ActualImageSize, ActualImageSize);
-            for (int i = 0; i < ActualImageSize; i++)
+            using (var bitmap = new Bitmap(ActualImageSize, ActualImageSize))
             {
-                for (int j = 0; j < ActualImageSize; j++)
+                var processor = new FastBitmap(bitmap);
+                processor.LockImage();
+                for (int i = 0; i < ActualImageSize; i++)
                 {
-                    bitmap.SetPixel(i, j, _newTopo[i, j] < value ? Color.Firebrick : MakeColor(i + N, j + N));
+                    for (int j = 0; j < ActualImageSize; j++)
+                    {
+                        processor.SetPixel(i, j, _newTopo[i, j] < value ? Color.Firebrick : MakeColor(i + N / 2, j + N / 2));
+                    }
                 }
+
+                processor.UnlockImage();
+                return ToWpfBitmap(bitmap);
             }
-            return ToWpfBitmap(bitmap);
         }
 
         public static BitmapSource ToWpfBitmap(Bitmap bitmap)
@@ -179,7 +207,12 @@ namespace Vasya
 
         public Color MakeColor(int i, int j)
         {
-            int x = (int) ((_topo[i][j] - _topoMinValue)/(_topoMaxValue - _topoMinValue) * 255);
+            double value = _topo[i][j];
+            if (value < _topoMin || value > _topoMax)
+            {
+                return Color.Black;
+            }
+            int x = (int)((value - _topoMin) / (_topoMax - _topoMin) * 255);
             return Color.FromArgb(x, x, x);
         }
     }
